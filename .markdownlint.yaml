@@ -1,0 +1,13 @@
+---
+default: true
+
+# paragraphs are one line, alerts sit in adjacent blockquotes, the support button is HTML
+MD013: false
+MD028: false
+MD033:
+  allowed_elements:
+    - a
+    - img
+
+# badges carry no alt text
+MD045: false

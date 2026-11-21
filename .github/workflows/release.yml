@@ -1,0 +1,88 @@
+---
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    name: Release
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: step-security/harden-runner@aebdcf6156ab6691adf63218240e476564a1ed4c # v2.23.0
+        with:
+          egress-policy: audit
+
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        id: release
+
+  container:
+    if: needs.release.outputs.release_created
+    runs-on: ubuntu-latest
+    name: Build (and Push) Container Image (${{ matrix.postgresql_major }})
+    needs:
+      - release
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        postgresql_major:
+          - 18
+
+    steps:
+      - uses: step-security/harden-runner@aebdcf6156ab6691adf63218240e476564a1ed4c # v2.23.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Upstream Tags
+        id: from_tag
+        run: |
+          VCHORD_VERSION=$(grep -m 1 'ARG VCHORD_VERSION' Dockerfile | cut -d'=' -f2)
+          echo "vchord=${VCHORD_VERSION}" >> "${GITHUB_OUTPUT}"
+
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/muhlba91/postgresql-vchord-extension:${{ github.sha }}-${{ matrix.postgresql_major }}
+            ghcr.io/muhlba91/postgresql-vchord-extension:${{ steps.from_tag.outputs.vchord }}-${{ matrix.postgresql_major }}
+            ghcr.io/muhlba91/postgresql-vchord-extension:${{ steps.from_tag.outputs.vchord }}-${{ matrix.postgresql_major }}-${{ needs.release.outputs.tag_name }}
+          build-args: |
+            CI_COMMIT_TIMESTAMP=${{ github.event.repository.updated_at }}
+            CI_COMMIT_SHA=${{ github.sha }}
+            CI_COMMIT_TAG=${{ steps.from_tag.outputs.vchord }}-${{ matrix.postgresql_major }}-${{ needs.release.outputs.tag_name }}
+            CI_UPSTREAM_VERSION=${{ steps.from_tag.outputs.vchord }}
+            POSTGRESQL_MAJOR_VERSION=${{ matrix.postgresql_major }}
+            VCHORD_VERSION=${{ steps.from_tag.outputs.vchord }}

@@ -1,0 +1,171 @@
+---
+name: Verify
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  conform:
+    runs-on: ubuntu-latest
+    name: Conform
+
+    steps:
+      - uses: step-security/harden-runner@aebdcf6156ab6691adf63218240e476564a1ed4c # v2.23.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: siderolabs/conform@18598907d4315be915a0c446fdd8aa9b47ba2c22 # v0.1.0-alpha.33
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  hadolint:
+    runs-on: ubuntu-latest
+    name: Lint Dockerfile
+
+    steps:
+      - uses: step-security/harden-runner@aebdcf6156ab6691adf63218240e476564a1ed4c # v2.23.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
+
+      - run: hadolint Dockerfile
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    name: Scan Secrets
+
+    steps:
+      - uses: step-security/harden-runner@aebdcf6156ab6691adf63218240e476564a1ed4c # v2.23.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
+
+      - run: gitleaks git
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    name: Lint Shell
+
+    steps:
+      - uses: step-security/harden-runner@aebdcf6156ab6691adf63218240e476564a1ed4c # v2.23.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
+
+      - run: shellcheck test/smoke.sh
+
+  yamllint:
+    runs-on: ubuntu-latest
+    name: Lint YAML
+
+    steps:
+      - uses: step-security/harden-runner@aebdcf6156ab6691adf63218240e476564a1ed4c # v2.23.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
+
+      - run: yamllint .
+
+  markdownlint:
+    runs-on: ubuntu-latest
+    name: Lint Markdown
+
+    steps:
+      - uses: step-security/harden-runner@aebdcf6156ab6691adf63218240e476564a1ed4c # v2.23.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
+
+      - run: markdownlint-cli2 "**/*.md"
+
+  container:
+    runs-on: ubuntu-latest
+    name: Build and Test Container Image (${{ matrix.postgresql_major }})
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - postgresql_major: 18
+            # renovate: datasource=docker packageName=ghcr.io/cloudnative-pg/pgvector versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)-18-trixie$
+            pgvector_image: ghcr.io/cloudnative-pg/pgvector:0.8.7-18-trixie
+
+    steps:
+      - uses: step-security/harden-runner@aebdcf6156ab6691adf63218240e476564a1ed4c # v2.23.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Get Upstream Tags
+        id: from_tag
+        run: |
+          VCHORD_VERSION=$(grep -m 1 'ARG VCHORD_VERSION' Dockerfile | cut -d'=' -f2)
+          echo "vchord=${VCHORD_VERSION}" >> "${GITHUB_OUTPUT}"
+
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: false
+          build-args: |
+            CI_COMMIT_TIMESTAMP=${{ github.event.repository.updated_at }}
+            CI_COMMIT_SHA=${{ github.sha }}
+            CI_COMMIT_TAG=${{ github.sha }}
+            CI_UPSTREAM_VERSION=${{ steps.from_tag.outputs.vchord }}
+            POSTGRESQL_MAJOR_VERSION=${{ matrix.postgresql_major }}
+            VCHORD_VERSION=${{ steps.from_tag.outputs.vchord }}
+
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          push: false
+          tags: vchord-extension:test
+          build-args: |
+            POSTGRESQL_MAJOR_VERSION=${{ matrix.postgresql_major }}
+            VCHORD_VERSION=${{ steps.from_tag.outputs.vchord }}
+
+      - name: Smoke Test
+        env:
+          POSTGRESQL_IMAGE: ghcr.io/cloudnative-pg/postgresql:${{ matrix.postgresql_major }}-minimal-trixie
+          PGVECTOR_IMAGE: ${{ matrix.pgvector_image }}
+          VCHORD_VERSION: ${{ steps.from_tag.outputs.vchord }}
+        run: test/smoke.sh "${POSTGRESQL_IMAGE}" "${PGVECTOR_IMAGE}" vchord-extension:test "${VCHORD_VERSION}"
