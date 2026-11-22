@@ -1,0 +1,4 @@
+---
+# release-please generates the changelog
+ignores:
+  - CHANGELOG.md
