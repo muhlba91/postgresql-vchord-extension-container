@@ -1,4 +1,7 @@
 ---
+# node hooks use the mise-pinned node; nodeenv cannot parse the prerelease default
+default_language_version:
+  node: system
 repos:
   - repo: https://github.com/siderolabs/conform
     rev: v0.1.0-alpha.33
@@ -33,10 +36,10 @@ repos:
     rev: 3.0.0
     hooks:
       - id: shellcheck
-  - repo: https://github.com/adrienverge/yamllint
-    rev: v1.38.0
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
     hooks:
-      - id: yamllint
+      - id: actionlint
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.24.2
     hooks:
