@@ -122,7 +122,7 @@ Update the `vchord` image reference and the `Database` version together, which R
 
 ## Development
 
-Tool versions (hadolint, shellcheck, markdownlint-cli2) are managed with mise: run `mise trust` and `mise install` once, and install yamllint locally, then use `make lint` and `make test`. `make test` builds the image for the host platform and runs a smoke test against the latest minor of the `minimal` PostgreSQL image and the pgvector extension image; set `CONTAINER_ENGINE=podman` to use podman.
+Tool versions (hadolint, shellcheck, markdownlint-cli2) are managed with mise: run `mise trust` and `mise install` once, then use `make lint` and `make test`. `make test` builds the image for the host platform and runs a smoke test against the latest minor of the `minimal` PostgreSQL image and the pgvector extension image; set `CONTAINER_ENGINE=podman` to use podman.
 
 The Dockerfile downloads the [vchord release](https://github.com/pgsty/vchord/releases) for the PostgreSQL major version, verifies its checksum and copies the library and SQL files into an empty image. The PostgreSQL major versions are a matrix in `.github/workflows/verify.yml` and `.github/workflows/release.yml`: add a major there and its `pgvector_image` to the `verify.yml` entry; the PostgreSQL image is derived from the major and the `trixie` distribution.
 

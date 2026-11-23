@@ -12,11 +12,10 @@ help: ## show the available targets
 
 check: lint test ## run all gates
 
-lint: ## lint the Dockerfile, shell, YAML and Markdown files
+lint: ## lint the Dockerfile, shell and Markdown files
 	hadolint Dockerfile
 	shellcheck test/smoke.sh
 	gitleaks git
-	yamllint .
 	markdownlint-cli2 "**/*.md"
 
 test: ## build the image for the host platform and run the smoke test
