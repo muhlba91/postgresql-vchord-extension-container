@@ -136,9 +136,3 @@ checksum = "sha256:5aeca67f2283f75235de40d0bd9c0a5bbc5fce23b6d48b3bf9fa1b2db0838
 url = "https://github.com/astral-sh/uv/releases/download/0.13.9/uv-aarch64-apple-darwin.tar.gz"
 url_api = "https://api.github.com/repos/astral-sh/uv/releases/assets/758513631"
 provenance = "github-attestations"
-
-[[tools.yamllint]]
-version = "1.38.0"
-backend = "pypi:yamllint"
-specifiers = ["1.38.0"]
-uv = { path = ".mise/locks/yamllint/1.38.0", digest = "sha256:4bfadb32c263d863763086c5d28f6e11f8b6c8cbe52108663bfb27cdcbd1fed2" }
