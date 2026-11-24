@@ -119,9 +119,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - postgresql_major: 18
-            # renovate: datasource=docker packageName=ghcr.io/cloudnative-pg/pgvector versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)-18-trixie$
-            pgvector_image: ghcr.io/cloudnative-pg/pgvector:0.8.7-18-trixie
+          - postgresql_major: 19
+            # renovate: datasource=docker packageName=ghcr.io/cloudnative-pg/pgvector versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)-19-trixie$
+            pgvector_image: ghcr.io/cloudnative-pg/pgvector:0.8.7-19-trixie
 
     steps:
       - uses: step-security/harden-runner@aebdcf6156ab6691adf63218240e476564a1ed4c # v2.23.0

@@ -53,8 +53,8 @@ metadata:
 spec:
   instances: 1
 
-  # renovate: datasource=docker packageName=ghcr.io/cloudnative-pg/postgresql versioning=regex:^(?<major>18)\.(?<minor>\d+)-minimal-trixie$
-  imageName: ghcr.io/cloudnative-pg/postgresql:18.7-minimal-trixie
+  # renovate: datasource=docker packageName=ghcr.io/cloudnative-pg/postgresql versioning=regex:^(?<major>19)\.(?<minor>\d+)-minimal-trixie$
+  imageName: ghcr.io/cloudnative-pg/postgresql:19.0-minimal-trixie
 
   storage:
     size: 1Gi
@@ -65,12 +65,12 @@ spec:
     extensions:
       - name: pgvector
         image:
-          # renovate: datasource=docker packageName=ghcr.io/cloudnative-pg/pgvector versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)-18-trixie$
-          reference: ghcr.io/cloudnative-pg/pgvector:0.8.7-18-trixie
+          # renovate: datasource=docker packageName=ghcr.io/cloudnative-pg/pgvector versioning=regex:^(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)-19-trixie$
+          reference: ghcr.io/cloudnative-pg/pgvector:0.8.7-19-trixie
       - name: vchord
         image:
-          # renovate: datasource=docker packageName=ghcr.io/muhlba91/postgresql-vchord-extension versioning=regex:^\d+\.\d+\.\d+-18-v(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
-          reference: ghcr.io/muhlba91/postgresql-vchord-extension:1.3.0-18-v1.0.0
+          # renovate: datasource=docker packageName=ghcr.io/muhlba91/postgresql-vchord-extension versioning=regex:^\d+\.\d+\.\d+-19-v(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$
+          reference: ghcr.io/muhlba91/postgresql-vchord-extension:1.5.0-19-v2.0.0
 
 ---
 apiVersion: postgresql.cnpg.io/v1
@@ -84,11 +84,11 @@ spec:
     name: cluster-vchord
   extensions:
     - name: vector
-      # renovate: datasource=docker packageName=ghcr.io/cloudnative-pg/pgvector extractVersion=^(?<version>\d+\.\d+\.\d+)-18-trixie$
+      # renovate: datasource=docker packageName=ghcr.io/cloudnative-pg/pgvector extractVersion=^(?<version>\d+\.\d+\.\d+)-19-trixie$
       version: "0.8.7"
     - name: vchord
-      # renovate: datasource=docker packageName=ghcr.io/muhlba91/postgresql-vchord-extension extractVersion=^(?<version>\d+\.\d+\.\d+)-18-v\d+\.\d+\.\d+$
-      version: "1.3.0"
+      # renovate: datasource=docker packageName=ghcr.io/muhlba91/postgresql-vchord-extension extractVersion=^(?<version>\d+\.\d+\.\d+)-19-v\d+\.\d+\.\d+$
+      version: "1.5.0"
 ```
 
 List `vector` before `vchord` in the `Database`. Check the installation in the database with `\dx`: `vector` and `vchord` are listed.

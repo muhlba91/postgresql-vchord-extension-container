@@ -1,4 +1,4 @@
-ARG POSTGRESQL_MAJOR_VERSION=18
+ARG POSTGRESQL_MAJOR_VERSION=19
 # renovate: datasource=github-releases packageName=pgsty/vchord
 ARG VCHORD_VERSION=1.5.0
 
