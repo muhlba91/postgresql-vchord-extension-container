@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/muhlba91/postgresql-vchord-extension-container/compare/v1.1.0...v2.0.0) (2026-11-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* major postgresql upgrade to v19
+
+### Features
+
+* upgrade to postgresql 19 ([fc3d493](https://github.com/muhlba91/postgresql-vchord-extension-container/commit/fc3d493c04d59319ffa85b166bdb92faf2a96ab4))
+
 ## [1.1.0](https://github.com/muhlba91/postgresql-vchord-extension-container/compare/v1.0.0...v1.1.0) (2026-11-24)
 
 
