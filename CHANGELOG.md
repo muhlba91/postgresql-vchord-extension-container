@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/muhlba91/postgresql-vchord-extension-container/compare/v2.0.0...v2.0.1) (2026-11-25)
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependency uv to v0.13.10 ([268d7cb](https://github.com/muhlba91/postgresql-vchord-extension-container/commit/268d7cbbfc0ffa68ccaaf91389cec2273477577f))
+
 ## [2.0.0](https://github.com/muhlba91/postgresql-vchord-extension-container/compare/v1.1.0...v2.0.0) (2026-11-24)
 
 
